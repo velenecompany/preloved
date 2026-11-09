@@ -38,6 +38,8 @@ config/site.ts              Marca y contacto (variables NEXT_PUBLIC_*)
 content/legal.ts            Borradores de políticas
 lib/
   db.ts                     Pool de pg y transacciones con app.user_id para auditoría
+  auth/                     Contraseñas (bcrypt), sesión JWT en cookie, tokens de correo, servicio de cuentas
+  email.ts                  Envío con Resend y plantillas de correo
   catalog.ts                Consultas del catálogo (solo servidor)
   domain/                   Lógica pura, sin dependencias de framework
     money.ts                Centavos, puntos base, formato MXN
@@ -50,7 +52,8 @@ lib/
 db/
   migrations/               001 esquema, 002 vista del catálogo, 003 configuración, 004 permanencia
   tests/integration.sql     Pruebas de reglas de base de datos
-scripts/                    migrate.mjs y test-db.sh
+scripts/                    migrate.mjs, make-admin.mjs y test-db.sh
+middleware.ts               Exige sesión válida en /cuenta y /admin
 ```
 
 ## Máquinas de estado
@@ -77,7 +80,11 @@ Asiento de una venta de $8,000 (bolso, 30 %): débito `efectivo_procesador` $8,0
 - Las reglas críticas están en la base de datos y no dependen del código: transiciones de estado válidas, regla de oro de publicación, permanencia mínima, ventas duplicadas imposibles (índice único parcial), ledger cuadrado e inmutable, bitácora inmutable.
 - Los cambios de estado se hacen dentro de `transaction(fn, userId)`, que fija `app.user_id` para que el historial registre quién hizo cada cambio.
 - Montos, comisiones y precios se calculan solo en servidor; el cliente nunca envía montos que se acepten tal cual.
-- Contraseñas con bcrypt y tokens de verificación y recuperación guardados como hash (Fase 2).
+- Contraseñas con bcrypt (costo 12). Tokens de verificación y recuperación de un solo uso, guardados como hash SHA-256.
+- Sesión: JWT HS256 en cookie httpOnly de 30 días. Incluye `session_version`; al cambiar o restablecer la contraseña, o al suspender una cuenta, todas las sesiones anteriores dejan de servir.
+- Login limitado a 5 intentos fallidos por correo y 20 por IP cada 15 minutos. El mensaje de error no revela si el correo existe.
+- Cambiar la CLABE pide la contraseña y avisa por correo. Solo cuentas con correo confirmado pueden registrar datos bancarios.
+- Roles de personal solo los asigna un administrador; queda registrado quién los dio. Siempre debe quedar al menos un administrador.
 
 ## Integraciones y variables
 
@@ -89,7 +96,7 @@ Ver `.env.example`. Neon (Fase 1), JWT y Resend (Fase 2), Vercel Blob e IA de vi
 |---|---|
 | Arquitectura, esquema, máquinas de estado, comisiones, ledger, permanencia mínima | Hecho y probado |
 | 1. Landing, catálogo con filtros, producto, políticas | Hecho |
-| 2. Autenticación, perfiles, roles, datos de liquidación | Pendiente |
+| 2. Autenticación, perfiles, roles, datos de liquidación | Hecho y probado de punta a punta |
 | 3. Flujo de consignación y evaluación IA | Pendiente |
 | 4. Compra, Mercado Pago, webhooks, ledger en vivo | Pendiente |
 | 5. Entrega, ventana de aceptación, disputas, liquidaciones | Pendiente |

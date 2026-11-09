@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/config/site";
+import { AccountLink } from "./account-link";
 
 const NAV = [
   { href: "/catalogo", label: "Catálogo" },
@@ -37,6 +38,9 @@ export function SiteHeader() {
             className="w-full border-b border-linea bg-transparent py-1 text-sm placeholder:text-piedra focus:border-tinta focus:outline-none"
           />
         </form>
+        <div className="text-sm text-grafito">
+          <AccountLink />
+        </div>
       </div>
     </header>
   );
