@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background: #f7f7f5;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 3px;
+}
+
+::selection {
+  background: #000;
+  color: #f7f7f5;
+}
+
+/* Una sola entrada orquestada: la ficha del hero. Se respeta la reducción de movimiento. */
+@keyframes ficha-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) rotate(-1.5deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(-1.5deg);
+  }
+}
+.ficha-entrada {
+  animation: ficha-in 700ms cubic-bezier(0.2, 0.7, 0.2, 1) 150ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ficha-entrada {
+    animation: none;
+    transform: rotate(-1.5deg);
+  }
+}
