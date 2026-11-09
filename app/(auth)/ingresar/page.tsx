@@ -7,7 +7,8 @@ import { LoginForm } from "../forms";
 
 export const metadata: Metadata = { title: "Ingresar" };
 
-export default async function LoginPage({ searchParams }: { searchParams: { siguiente?: string } }) {
+export default async function LoginPage(props: { searchParams: Promise<{ siguiente?: string }> }) {
+  const searchParams = await props.searchParams;
   const siguiente = searchParams.siguiente ? safeRedirect(searchParams.siguiente) : undefined;
   if (await getCurrentUser()) redirect(siguiente ?? "/cuenta");
 

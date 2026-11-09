@@ -5,7 +5,8 @@ import { consumeVerificationToken } from "@/lib/auth/service";
 export const metadata: Metadata = { title: "Confirmar correo" };
 export const dynamic = "force-dynamic";
 
-export default async function VerifyPage({ searchParams }: { searchParams: { token?: string } }) {
+export default async function VerifyPage(props: { searchParams: Promise<{ token?: string }> }) {
+  const searchParams = await props.searchParams;
   const token = searchParams.token ?? "";
   const ok = token.length >= 20 && (await consumeVerificationToken(token));
 

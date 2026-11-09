@@ -32,12 +32,14 @@ describe("máquina de estados de la pieza", () => {
     }
   });
   it("coincide exactamente con las transiciones de la migración SQL", () => {
-    const sql = readFileSync(
-      join(process.cwd(), "db/migrations/001_schema.sql"),
-      "utf8",
-    );
-    const block = sql.split("-- BEGIN product_status_transitions")[1].split("-- END product_status_transitions")[0];
-    const fromSql = [...block.matchAll(/\('([a-z_]+)',\s*'([a-z_]+)'\)/g)].map((m) => `${m[1]}>${m[2]}`).sort();
+    const schema = readFileSync(join(process.cwd(), "db/migrations/001_schema.sql"), "utf8");
+    const block = schema.split("-- BEGIN product_status_transitions")[1].split("-- END product_status_transitions")[0];
+    // Migraciones posteriores que agregan transiciones
+    const later = readFileSync(join(process.cwd(), "db/migrations/006_consignment_requests.sql"), "utf8")
+      .split("\n")
+      .filter((l) => l.startsWith("insert into product_status_transitions"))
+      .join("\n");
+    const fromSql = [...(block + later).matchAll(/\('([a-z_]+)',\s*'([a-z_]+)'\)/g)].map((m) => `${m[1]}>${m[2]}`).sort();
     const fromTs = Object.entries(PRODUCT_TRANSITIONS)
       .flatMap(([from, tos]) => tos.map((to) => `${from}>${to}`))
       .sort();

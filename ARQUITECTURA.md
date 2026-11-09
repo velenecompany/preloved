@@ -40,6 +40,8 @@ lib/
   db.ts                     Pool de pg y transacciones con app.user_id para auditoría
   auth/                     Contraseñas (bcrypt), sesión JWT en cookie, tokens de correo, servicio de cuentas
   email.ts                  Envío con Resend y plantillas de correo
+  storage.ts                Fotos: Vercel Blob en producción, carpeta .uploads en desarrollo
+  consignment/              Servicio de solicitudes, esquemas, evaluación con IA (Groq visión)
   catalog.ts                Consultas del catálogo (solo servidor)
   domain/                   Lógica pura, sin dependencias de framework
     money.ts                Centavos, puntos base, formato MXN
@@ -97,10 +99,22 @@ Ver `.env.example`. Neon (Fase 1), JWT y Resend (Fase 2), Vercel Blob e IA de vi
 | Arquitectura, esquema, máquinas de estado, comisiones, ledger, permanencia mínima | Hecho y probado |
 | 1. Landing, catálogo con filtros, producto, políticas | Hecho |
 | 2. Autenticación, perfiles, roles, datos de liquidación | Hecho y probado de punta a punta |
-| 3. Flujo de consignación y evaluación IA | Pendiente |
+| 3A. Solicitud de consignación, fotos, prueba de posesión, IA, revisión y respuesta del vendedor | Hecho y probado de punta a punta |
+| 3B. Cita de entrega, recepción, autenticación física, contrato, fotos finales y publicación | Pendiente |
 | 4. Compra, Mercado Pago, webhooks, ledger en vivo | Pendiente |
 | 5. Entrega, ventana de aceptación, disputas, liquidaciones | Pendiente |
 | 6. Finanzas y reportes | Pendiente |
 | 7. Endurecimiento y envío nacional | Pendiente |
 
 **Mientras tanto (piloto):** el botón de la pieza es "Apartar por WhatsApp" y la solicitud de consignación se recibe por WhatsApp. Las piezas se cargan directo en Neon por el personal siguiendo el flujo de estados. Los favoritos y la compra en línea llegan con las fases 2 y 4.
+
+## Solicitudes de consignación (Fase 3A)
+
+1. El vendedor (correo confirmado) llena los datos de la pieza; se crea un borrador con un código de posesión `RL-XXXXX`.
+2. Sube fotos por toma según la categoría (calzado pide suelas, bolsos pide interior). El navegador las reduce a 2000 px en JPEG antes de subir. En producción van directo a Vercel Blob con permiso emitido por `/api/fotos/subir`, solo dentro de `solicitudes/{vendedor}/{pieza}/`.
+3. Sube la foto de la pieza con el código escrito a mano. Sin las obligatorias y sin esa foto no puede enviar.
+4. Al enviar se abre una ronda en `consignment_requests` y el navegador pide la lectura con IA (`/api/solicitudes/[id]/evaluar`, hasta 60 s). La IA solo describe condición visible; su salida se valida con Zod y se filtran frases sobre autenticidad.
+5. El equipo (admin o autenticador) responde: preaprobar con precio y comisión, pedir información o rechazar. Cada respuesta manda correo.
+6. El vendedor acepta (requiere datos bancarios), contrapropone (máximo 4 rondas) o retira. Al aceptar, la pieza pasa a `pendiente_de_entrega`.
+
+Las fotos de solicitud son públicas en Blob pero con nombre aleatorio no adivinable; solo se muestran a su dueño y al equipo.

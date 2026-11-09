@@ -8,8 +8,9 @@ export default async function AccountLayout({ children }: { children: React.Reac
   const user = await requireUser();
   const links = [
     { href: "/cuenta", label: "Mi cuenta" },
+    { href: "/cuenta/consignaciones", label: "Consignaciones" },
     { href: "/cuenta/datos-bancarios", label: "Datos bancarios" },
-    ...(isStaff(user) ? [{ href: "/admin/usuarios", label: "Administración" }] : []),
+    ...(isStaff(user) ? [{ href: "/admin/solicitudes", label: "Administración" }] : []),
   ];
 
   return (

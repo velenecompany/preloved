@@ -22,7 +22,8 @@ const ROLE_LABEL: Record<Role, string> = {
   finanzas: "Finanzas",
 };
 
-export default async function AccountPage({ searchParams }: { searchParams: { aviso?: string } }) {
+export default async function AccountPage(props: { searchParams: Promise<{ aviso?: string }> }) {
+  const searchParams = await props.searchParams;
   const user = await requireUser();
   const payout = await getPayoutAccount(user.id);
   const notice = searchParams.aviso ? NOTICES[searchParams.aviso] : undefined;

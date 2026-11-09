@@ -1,12 +1,12 @@
 "use client";
 
+import { useActionState } from "react";
 import Link from "next/link";
-import { useFormState } from "react-dom";
 import { Field, FormMessage, initialFormState, SubmitButton } from "@/components/form";
 import { loginAction, registerAction, requestResetAction, resetPasswordAction } from "./actions";
 
 export function LoginForm({ siguiente }: { siguiente?: string }) {
-  const [state, action] = useFormState(loginAction, initialFormState);
+  const [state, action] = useActionState(loginAction, initialFormState);
   return (
     <form action={action} className="space-y-5" noValidate>
       <FormMessage state={state} />
@@ -24,7 +24,7 @@ export function LoginForm({ siguiente }: { siguiente?: string }) {
 }
 
 export function RegisterForm({ siguiente }: { siguiente?: string }) {
-  const [state, action] = useFormState(registerAction, initialFormState);
+  const [state, action] = useActionState(registerAction, initialFormState);
   return (
     <form action={action} className="space-y-5" noValidate>
       <FormMessage state={state} />
@@ -57,7 +57,7 @@ export function RegisterForm({ siguiente }: { siguiente?: string }) {
 }
 
 export function RecoverForm() {
-  const [state, action] = useFormState(requestResetAction, initialFormState);
+  const [state, action] = useActionState(requestResetAction, initialFormState);
   if (state.success) return <FormMessage state={state} />;
   return (
     <form action={action} className="space-y-5" noValidate>
@@ -69,7 +69,7 @@ export function RecoverForm() {
 }
 
 export function ResetForm({ token }: { token: string }) {
-  const [state, action] = useFormState(resetPasswordAction, initialFormState);
+  const [state, action] = useActionState(resetPasswordAction, initialFormState);
   return (
     <form action={action} className="space-y-5" noValidate>
       <FormMessage state={state} />

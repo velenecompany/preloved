@@ -14,7 +14,8 @@ const ASSIGNABLE: { role: Role; label: string; help: string }[] = [
   { role: "admin", label: "Administrador", help: "Todo, incluida la configuración" },
 ];
 
-export default async function UsersPage({ searchParams }: { searchParams: { q?: string } }) {
+export default async function UsersPage(props: { searchParams: Promise<{ q?: string }> }) {
+  const searchParams = await props.searchParams;
   const me = await requireRole(STAFF_ROLES, "/admin/usuarios");
   const canEdit = hasRole(me, "admin");
   const users = await listUsers(searchParams.q);

@@ -20,7 +20,7 @@ export interface CurrentUser {
 
 export async function startSession(userId: string, sessionVersion: number): Promise<void> {
   const token = await signSession({ sub: userId, sv: sessionVersion });
-  cookies().set(SESSION_COOKIE, token, {
+  (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -29,8 +29,8 @@ export async function startSession(userId: string, sessionVersion: number): Prom
   });
 }
 
-export function endSession(): void {
-  cookies().delete(SESSION_COOKIE);
+export async function endSession(): Promise<void> {
+  (await cookies()).delete(SESSION_COOKIE);
 }
 
 /**
@@ -39,7 +39,7 @@ export function endSession(): void {
  * o si la contraseña cambió después de iniciar esta sesión.
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
-  const claims = await verifySession(cookies().get(SESSION_COOKIE)?.value);
+  const claims = await verifySession((await cookies()).get(SESSION_COOKIE)?.value);
   if (!claims) return null;
   const rows = await query<{
     id: string;

@@ -1,16 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { useFormState } from "react-dom";
-import { Field, FormMessage, initialFormState, SubmitButton } from "@/components/form";
+import { useActionState, useState } from "react";
+import { Field, FormMessage, initialFormState, keepValuesOnSubmit, SubmitButton } from "@/components/form";
 import { bankFromClabe } from "@/lib/domain/banks";
 import { site } from "@/config/site";
 import { changePasswordAction, resendVerificationAction, savePayoutAction, updateProfileAction } from "./actions";
 
 export function ProfileForm({ fullName, phone }: { fullName: string; phone: string }) {
-  const [state, action] = useFormState(updateProfileAction, initialFormState);
+  const [state, action, pending] = useActionState(updateProfileAction, initialFormState);
   return (
-    <form action={action} className="space-y-5" noValidate>
+    <form onSubmit={keepValuesOnSubmit(action)} className="space-y-5" noValidate>
       <FormMessage state={state} />
       <Field label="Nombre completo" name="fullName" autoComplete="name" defaultValue={fullName} error={state.fieldErrors?.fullName} />
       <Field
@@ -23,13 +22,13 @@ export function ProfileForm({ fullName, phone }: { fullName: string; phone: stri
         hint="Para coordinar entregas y recolecciones."
         error={state.fieldErrors?.phone}
       />
-      <SubmitButton pendingLabel="Guardando…">Guardar datos</SubmitButton>
+      <SubmitButton pendingLabel="Guardando…" pending={pending}>Guardar datos</SubmitButton>
     </form>
   );
 }
 
 export function ResendVerificationForm() {
-  const [state, action] = useFormState(resendVerificationAction, initialFormState);
+  const [state, action] = useActionState(resendVerificationAction, initialFormState);
   return (
     <form action={action} className="space-y-3">
       <FormMessage state={state} />
@@ -43,7 +42,7 @@ export function ResendVerificationForm() {
 }
 
 export function ChangePasswordForm() {
-  const [state, action] = useFormState(changePasswordAction, initialFormState);
+  const [state, action] = useActionState(changePasswordAction, initialFormState);
   return (
     <form action={action} className="space-y-5" noValidate key={state.success ?? "form"}>
       <FormMessage state={state} />
@@ -67,13 +66,13 @@ export function PayoutForm({
 }: {
   initial: { holderName: string; clabe: string; bankName: string; rfc: string } | null;
 }) {
-  const [state, action] = useFormState(savePayoutAction, initialFormState);
+  const [state, action, pending] = useActionState(savePayoutAction, initialFormState);
   const values = state.values ?? initial ?? { holderName: "", clabe: "", bankName: "", rfc: "" };
   const [bankName, setBankName] = useState(values.bankName);
   const [bankTouched, setBankTouched] = useState(Boolean(values.bankName));
 
   return (
-    <form action={action} className="space-y-5" noValidate>
+    <form onSubmit={keepValuesOnSubmit(action)} className="space-y-5" noValidate>
       <FormMessage state={state} />
       <Field
         label="Titular de la cuenta"
@@ -126,7 +125,7 @@ export function PayoutForm({
         hint="La pedimos cada vez que cambias a dónde te pagamos."
         error={state.fieldErrors?.currentPassword}
       />
-      <SubmitButton pendingLabel="Guardando…">Guardar datos bancarios</SubmitButton>
+      <SubmitButton pendingLabel="Guardando…" pending={pending}>Guardar datos bancarios</SubmitButton>
     </form>
   );
 }

@@ -126,3 +126,49 @@ export function payoutAccountChangedEmail(lastFour: string) {
   };
   return { subject: `Cambiaron tus datos bancarios en ${site.name}`, html: layout({ preheader: "Aviso de seguridad.", ...content }), text: text(content) };
 }
+
+// ---------------------------------------------------------------------
+// Consignación
+// ---------------------------------------------------------------------
+
+export function requestReceivedEmail(piece: string, detailUrl: string) {
+  const content = {
+    heading: "Recibimos tu solicitud",
+    paragraphs: [
+      `Tu solicitud para consignar ${piece} ya está en revisión.`,
+      "Revisamos las fotos y te respondemos con una propuesta de precio y comisión, o te pedimos más información.",
+    ],
+    action: { label: "Ver mi solicitud", url: detailUrl },
+  };
+  return { subject: `Recibimos tu solicitud: ${piece}`, html: layout({ preheader: "Tu solicitud está en revisión.", ...content }), text: text(content) };
+}
+
+export function requestPreapprovedEmail(piece: string, offer: string, net: string, detailUrl: string) {
+  const content = {
+    heading: "Tenemos una propuesta para tu pieza",
+    paragraphs: [
+      `Preaprobamos ${piece}. Proponemos publicarla en ${offer}; si se vende a ese precio, recibes ${net} después de comisión.`,
+      "Acepta la propuesta, contrapropón otro precio o retira tu solicitud desde tu cuenta. La autenticación final se hace cuando recibimos la pieza.",
+    ],
+    action: { label: "Responder a la propuesta", url: detailUrl },
+  };
+  return { subject: `Propuesta para ${piece}`, html: layout({ preheader: `Propuesta: ${offer}.`, ...content }), text: text(content) };
+}
+
+export function requestNeedsInfoEmail(piece: string, notes: string, detailUrl: string) {
+  const content = {
+    heading: "Necesitamos un poco más de información",
+    paragraphs: [`Para continuar con ${piece}:`, notes, "Actualiza tu solicitud y vuelve a enviarla."],
+    action: { label: "Actualizar mi solicitud", url: detailUrl },
+  };
+  return { subject: `Falta información: ${piece}`, html: layout({ preheader: "Actualiza tu solicitud.", ...content }), text: text(content) };
+}
+
+export function requestRejectedEmail(piece: string, reason: string) {
+  const content = {
+    heading: "No podemos consignar esta pieza",
+    paragraphs: [`Revisamos tu solicitud para ${piece} y por ahora no podemos aceptarla.`, `Motivo: ${reason}`, "Gracias por pensar en nosotros. Puedes enviar otras piezas cuando quieras."],
+    action: { label: "Ver mis solicitudes", url: appUrl("/cuenta/consignaciones") },
+  };
+  return { subject: `Respuesta a tu solicitud: ${piece}`, html: layout({ preheader: "Respuesta a tu solicitud.", ...content }), text: text(content) };
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import type { InputHTMLAttributes, ReactNode } from "react";
+import { startTransition, type FormEvent, type InputHTMLAttributes, type ReactNode } from "react";
 
 export interface FormState {
   error?: string;
@@ -13,8 +13,21 @@ export interface FormState {
 
 export const initialFormState: FormState = {};
 
-export function SubmitButton({ children, pendingLabel }: { children: ReactNode; pendingLabel: string }) {
-  const { pending } = useFormStatus();
+/**
+ * React 19 vacía los formularios con `action={...}` al terminar la acción, aunque haya errores.
+ * Con este onSubmit la acción corre igual, pero lo que escribió la persona se queda.
+ */
+export function keepValuesOnSubmit(formAction: (formData: FormData) => void) {
+  return (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget, (event.nativeEvent as SubmitEvent).submitter);
+    startTransition(() => formAction(formData));
+  };
+}
+
+export function SubmitButton({ children, pendingLabel, pending: pendingProp }: { children: ReactNode; pendingLabel: string; pending?: boolean }) {
+  const status = useFormStatus();
+  const pending = pendingProp ?? status.pending;
   return (
     <button
       type="submit"

@@ -67,7 +67,7 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
   const parsed = loginSchema.safeParse(raw);
   if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error), values };
 
-  const result = await authenticate(parsed.data.email, parsed.data.password, clientIp());
+  const result = await authenticate(parsed.data.email, parsed.data.password, await clientIp());
   if (!result.ok) {
     const message = {
       invalid: "El correo o la contraseña no coinciden.",
@@ -86,7 +86,7 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
 // ---------------------------------------------------------------------
 
 export async function logoutAction(): Promise<void> {
-  endSession();
+  await endSession();
   redirect("/");
 }
 

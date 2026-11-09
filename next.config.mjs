@@ -1,5 +1,9 @@
+import { fileURLToPath } from "node:url";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // La raíz del proyecto es esta carpeta (evita que Next tome otro package-lock.json de más arriba).
+  outputFileTracingRoot: fileURLToPath(new URL(".", import.meta.url)),
   images: {
     remotePatterns: [
       // Fotos en Vercel Blob

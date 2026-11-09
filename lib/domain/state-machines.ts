@@ -32,7 +32,7 @@ export const PRODUCT_TRANSITIONS: Record<ProductStatus, readonly ProductStatus[]
   solicitud_borrador: ["solicitud_enviada", "retirada_por_vendedor"],
   solicitud_enviada: ["requiere_informacion", "preaprobada", "rechazada"],
   requiere_informacion: ["solicitud_enviada", "retirada_por_vendedor"],
-  preaprobada: ["pendiente_de_entrega", "retirada_por_vendedor"],
+  preaprobada: ["pendiente_de_entrega", "retirada_por_vendedor", "solicitud_enviada"],
   rechazada: [],
   pendiente_de_entrega: ["recibida", "retirada_por_vendedor"],
   recibida: ["en_autenticacion"],

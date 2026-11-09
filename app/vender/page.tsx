@@ -87,20 +87,21 @@ export default function SellPage() {
       </section>
 
       <section className="mt-16 border-t border-linea pt-12" aria-labelledby="requisitos">
-        <h2 id="requisitos" className="font-display text-title">Antes de enviarnos fotos</h2>
+        <h2 id="requisitos" className="font-display text-title">Qué te vamos a pedir</h2>
         <ul className="mt-6 grid gap-x-10 gap-y-3 text-grafito md:grid-cols-2">
           <li>Fotos de frente, espalda, laterales, etiquetas interiores y, en calzado, suelas.</li>
           <li>Fotos claras de cualquier desgaste o defecto.</li>
-          <li>Una foto de la pieza junto a un papel con tu nombre y la fecha, para confirmar que la tienes.</li>
+          <li>Una foto de la pieza junto a un papel con el código que te damos al empezar, para confirmar que la tienes.</li>
           <li>Caja, bolsa protectora, tickets o certificados, si los tienes.</li>
         </ul>
         <div className="mt-10 flex flex-wrap items-center gap-6">
-          {contact ? (
-            <a href={contact} className="bg-tinta px-6 py-3 text-papel hover:bg-grafito">
-              Enviar fotos por WhatsApp
+          <Link href="/cuenta/consignaciones/nueva" className="bg-tinta px-6 py-3 text-papel hover:bg-grafito">
+            Consignar una pieza
+          </Link>
+          {contact && (
+            <a href={contact} className="text-sm underline underline-offset-4">
+              Prefiero escribir por WhatsApp
             </a>
-          ) : (
-            <p className="text-sm text-piedra">Configura NEXT_PUBLIC_WHATSAPP_NUMBER para activar el envío de solicitudes.</p>
           )}
           <Link href="/legal/vendedores" className="text-sm underline underline-offset-4">
             Política de vendedores

@@ -17,7 +17,7 @@ import {
 } from "@/lib/domain/labels";
 import { whatsappLink } from "@/config/site";
 
-type Params = { slug: string };
+type Params = Promise<{ slug: string }>;
 
 export const revalidate = 60;
 
@@ -31,7 +31,7 @@ async function load(slug: string) {
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   const res = await load(slug);
   if (!res.ok || !res.detail) return { title: "Pieza no encontrada" };
   const p = res.detail.product;
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 export default async function ProductPage({ params }: { params: Params }) {
-  const { slug } = params;
+  const { slug } = await params;
   const res = await load(slug);
   if (!res.ok) {
     return (

@@ -8,7 +8,8 @@ import { RegisterForm } from "../forms";
 
 export const metadata: Metadata = { title: "Crear cuenta" };
 
-export default async function RegisterPage({ searchParams }: { searchParams: { siguiente?: string } }) {
+export default async function RegisterPage(props: { searchParams: Promise<{ siguiente?: string }> }) {
+  const searchParams = await props.searchParams;
   const siguiente = searchParams.siguiente ? safeRedirect(searchParams.siguiente) : undefined;
   if (await getCurrentUser()) redirect(siguiente ?? "/cuenta");
 

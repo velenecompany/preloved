@@ -15,7 +15,7 @@ import {
 
 export const metadata: Metadata = { title: "Catálogo" };
 
-type SearchParams = Record<string, string | string[] | undefined>;
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 function hrefWith(f: CatalogFilters, changes: Partial<Record<keyof CatalogFilters, string | number | undefined>>) {
   const params = new URLSearchParams();
@@ -40,7 +40,7 @@ function hrefWith(f: CatalogFilters, changes: Partial<Record<keyof CatalogFilter
 }
 
 export default async function CatalogPage({ searchParams }: { searchParams: SearchParams }) {
-  const filters = parseFilters(searchParams);
+  const filters = parseFilters(await searchParams);
 
   let result;
   try {

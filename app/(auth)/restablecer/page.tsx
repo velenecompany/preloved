@@ -6,7 +6,8 @@ import { ResetForm } from "../forms";
 export const metadata: Metadata = { title: "Elegir contraseña nueva" };
 export const dynamic = "force-dynamic";
 
-export default async function ResetPage({ searchParams }: { searchParams: { token?: string } }) {
+export default async function ResetPage(props: { searchParams: Promise<{ token?: string }> }) {
+  const searchParams = await props.searchParams;
   const token = searchParams.token ?? "";
   const valid = token.length >= 20 && (await isResetTokenValid(token));
 
