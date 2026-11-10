@@ -11,8 +11,9 @@ import { DECLARED_CONDITION_LABEL } from "@/lib/domain/labels";
  * Si falla o no hay llave, la solicitud sigue su curso y se puede reintentar desde el panel.
  */
 
-const DEFAULT_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
-const MAX_IMAGES = 5;
+// Groq retiró Llama 4 Scout el 17/07/2026; su modelo de visión vigente es Qwen 3.8 27B (máx. 3 imágenes por petición).
+const DEFAULT_MODEL = "qwen/qwen3.8-27b";
+const MAX_IMAGES = Math.min(Math.max(Number(process.env.GROQ_VISION_MAX_IMAGES) || 3, 1), 5);
 const TIMEOUT_MS = 45_000;
 
 export const aiAssessmentSchema = z
@@ -103,8 +104,10 @@ Evalúa la condición visible.`;
       body: JSON.stringify({
         model,
         temperature: 0.2,
-        max_completion_tokens: 1200,
+        max_completion_tokens: 1500,
         response_format: { type: "json_object" },
+        // Los modelos Qwen razonan; en modo JSON Groq exige ocultar o separar el razonamiento.
+        ...(model.startsWith("qwen/") ? { reasoning_format: "hidden", reasoning_effort: "none" } : {}),
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           {
