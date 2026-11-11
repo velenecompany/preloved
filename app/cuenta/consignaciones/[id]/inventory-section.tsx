@@ -10,7 +10,7 @@ import { ConfirmButton } from "@/components/consignment/seller-actions";
 import { acceptContractAction, declineContractAction, scheduleIntakeAction, trackingAction } from "../inventory-actions";
 
 /** Lo que sigue después de aceptar la oferta: entrega, recepción, contrato y publicación. */
-export async function InventorySection({ r }: { r: RequestDetail }) {
+export async function InventorySection({ r, notice }: { r: RequestDetail; notice?: string }) {
   const [user, view, options] = await Promise.all([requireUser(`/cuenta/consignaciones/${r.id}`), getSellerInventoryView(r.id), getIntakeOptions()]);
   const { plan, agreement, lastAuth } = view;
 
@@ -112,7 +112,7 @@ export async function InventorySection({ r }: { r: RequestDetail }) {
         </section>
       )}
 
-      {r.status === "pendiente_de_fotografia" && (
+      {r.status === "pendiente_de_fotografia" && notice !== "contrato" && (
         <p className="border-l-2 border-tinta bg-white px-5 py-4 text-sm">
           Aceptaste tu contrato{agreement?.accepted_at ? ` el ${formatLongDate(new Date(agreement.accepted_at))}` : ""}. Estamos fotografiando tu pieza para publicarla.
         </p>

@@ -61,7 +61,7 @@ export default async function RequestsPage(props: { searchParams: Promise<{ avis
                   <p className="text-xs text-piedra">Enviada {waiting(r.submitted_at)}</p>
                 </div>
                 <p className="col-start-2 text-sm text-grafito sm:col-start-auto sm:text-right">
-                  {r.ai_score ? `IA ${formatScore(Number(r.ai_score))}/10` : "Sin lectura IA"}
+                  {r.ai_score ? `IA ${formatScore(Number(r.ai_score))}/10` : r.ai_read ? "IA: faltan fotos" : "Sin lectura IA"}
                 </p>
               </Link>
             </li>

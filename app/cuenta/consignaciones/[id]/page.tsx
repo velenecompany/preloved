@@ -116,7 +116,7 @@ export default async function RequestPage(props: { params: Promise<{ id: string 
       )}
 
       {r.status === "preaprobada" && latest?.offered_price_cents && <OfferSection r={r} userId={user.id} />}
-      {AFTER_ACCEPTANCE.includes(r.status) && <InventorySection r={r} />}
+      {AFTER_ACCEPTANCE.includes(r.status) && <InventorySection r={r} notice={searchParams.aviso} />}
 
       {editable ? <EditableRequest r={r} userId={user.id} step={searchParams.paso} /> : <ReadOnlyRequest r={r} />}
     </div>

@@ -410,6 +410,19 @@ export async function publishPiece(staffId: string, productId: string, descripti
   }, staffId);
 }
 
+/** La empresa saca una pieza publicada del catálogo (daño, disputa, error, prueba). Queda pendiente de devolver. */
+export async function unpublishPiece(staffId: string, productId: string, reason: string): Promise<void> {
+  await transaction(async (c) => {
+    const p = await lockProduct(c, productId);
+    if (p.status !== "publicada") throw new InventoryError("Solo se puede retirar una pieza que está publicada");
+    // La base exige un motivo de la empresa para devolver una pieza publicada sin solicitud del vendedor.
+    await c.query("select set_config('app.return_reason', $1, true)", [reason]);
+    await setStatus(c, productId, p.status, "devolucion_pendiente", `Retirada del catálogo por la empresa: ${reason}`);
+    await c.query("select set_config('app.return_reason', '', true)");
+    await audit(staffId, "pieza_retirada_del_catalogo", "products", productId, { motivo: reason }, c);
+  }, staffId);
+}
+
 export async function markReturned(staffId: string, productId: string, notes: string | null): Promise<void> {
   await transaction(async (c) => {
     const p = await lockProduct(c, productId);

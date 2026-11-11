@@ -20,6 +20,7 @@ import {
   recordAuthentication,
   registerIntake,
   removeInventoryPhoto,
+  unpublishPiece,
   type InventoryPhotoKind,
 } from "@/lib/inventory/service";
 import {
@@ -212,4 +213,19 @@ export async function returnAction(productId: string, _prev: FormState, formData
   if (p) await sendEmail({ to: p.seller_email, ...pieceReturnedEmail(`${p.brand_name} ${p.model}`) });
   revalidatePath("/admin/inventario");
   redirect(`${piecePath(productId)}?aviso=devuelta`);
+}
+
+export async function unpublishAction(productId: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  const staff = await requireRole(["admin"], piecePath(productId));
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (reason.length < 5) return { fieldErrors: { reason: "Escribe el motivo (lo verá el historial)" } };
+  try {
+    await unpublishPiece(staff.id, productId, reason.slice(0, 300));
+  } catch (e) {
+    return failure(e);
+  }
+  revalidatePath("/admin/inventario");
+  revalidatePath("/catalogo");
+  revalidatePath("/");
+  redirect(`${piecePath(productId)}?aviso=retirada`);
 }

@@ -185,3 +185,28 @@ export function ReturnForm({ action }: { action: Action }) {
     </form>
   );
 }
+
+export function UnpublishForm({ action }: { action: Action }) {
+  const [state, formAction, pending] = useActionState(action, initialFormState);
+  return (
+    <details className="border-t border-linea pt-5">
+      <summary className="cursor-pointer text-sm underline underline-offset-4">Retirar del catálogo</summary>
+      <form onSubmit={keepValuesOnSubmit(formAction)} className="mt-4 space-y-4" noValidate>
+        <FormMessage state={state} />
+        <p className="text-sm text-grafito">
+          Deja de mostrarse en el catálogo y pasa a devoluciones. Úsalo por daño, disputa, error o una pieza de prueba. Si es el vendedor quien la quiere de vuelta, debe pedir el retiro desde su cuenta.
+        </p>
+        <div>
+          <label htmlFor="reason" className="mb-1.5 block text-sm font-medium">
+            Motivo
+          </label>
+          <textarea id="reason" name="reason" rows={2} maxLength={300} className={textareaClass} />
+          {state.fieldErrors?.reason && <p className="mt-1.5 text-sm">{state.fieldErrors.reason}</p>}
+        </div>
+        <SubmitButton pendingLabel="Retirando…" pending={pending}>
+          Retirar del catálogo
+        </SubmitButton>
+      </form>
+    </details>
+  );
+}

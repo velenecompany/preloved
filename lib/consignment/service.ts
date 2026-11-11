@@ -294,6 +294,7 @@ export interface RequestSummary {
   seller_name?: string | null;
   submitted_at?: Date | null;
   ai_score?: string | null;
+  ai_read?: boolean;
 }
 
 export async function listSellerRequests(userId: string): Promise<RequestSummary[]> {
@@ -402,7 +403,8 @@ export async function listRequestsForReview(): Promise<RequestSummary[]> {
             (select count(*) from product_images i where i.product_id = p.id and i.kind = 'preliminar') as photo_count,
             p.updated_at, u.email as seller_email, u.full_name as seller_name,
             (select created_at from consignment_requests r where r.product_id = p.id order by round desc limit 1) as submitted_at,
-            (select score from condition_assessments a where a.product_id = p.id and a.source = 'ia' order by created_at desc limit 1) as ai_score
+            (select score from condition_assessments a where a.product_id = p.id and a.source = 'ia' order by created_at desc limit 1) as ai_score,
+            exists (select 1 from condition_assessments a where a.product_id = p.id and a.source = 'ia') as ai_read
      from products p join brands b on b.id = p.brand_id join product_categories c on c.id = p.category_id join users u on u.id = p.seller_id
      where p.status = 'solicitud_enviada'
      order by submitted_at asc nulls last`,

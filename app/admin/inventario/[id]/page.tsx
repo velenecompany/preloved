@@ -12,8 +12,8 @@ import { POSSESSION_SLOT } from "@/lib/domain/photo-guide";
 import { getIntakeOptions, getPieceForStaff, type PieceForStaff } from "@/lib/inventory/service";
 import { AUTHENTICATORS, OPERATIONS, PHOTOGRAPHERS } from "@/lib/inventory/roles";
 import { InventoryPhotos } from "@/components/inventory/inventory-photos";
-import { AuthenticationForm, IntakeForm, PublishForm, ReturnForm } from "@/components/inventory/staff-forms";
-import { authenticationAction, intakeAction, publishAction, returnAction } from "../actions";
+import { AuthenticationForm, IntakeForm, PublishForm, ReturnForm, UnpublishForm } from "@/components/inventory/staff-forms";
+import { authenticationAction, intakeAction, publishAction, returnAction, unpublishAction } from "../actions";
 
 export const metadata: Metadata = { title: "Pieza en inventario" };
 export const dynamic = "force-dynamic";
@@ -25,6 +25,7 @@ const NOTICES: Record<string, string> = {
   no_concluyente: "Guardamos la revisión como no concluyente. La pieza sigue en autenticación.",
   publicada: "La pieza ya está publicada en el catálogo. Avisamos al vendedor.",
   devuelta: "Registramos la devolución.",
+  retirada: "La pieza salió del catálogo y quedó en devoluciones.",
 };
 
 const ANSWER_LABEL = { ok: "Bien", falla: "Falla", na: "No aplica" } as const;
@@ -181,7 +182,12 @@ function StagePanel({ p, me, can }: { p: PieceForStaff; me: CurrentUser; can: (r
         <section className="space-y-6">
           <h3 className="font-display text-xl">Devolución</h3>
           <p className="text-sm text-grafito">
-            {p.authentications[0]?.result === "no_autentica" ? "No pasó la autenticación." : "El vendedor no aceptó el contrato."} Coordina con{" "}
+            {p.authentications[0]?.result === "no_autentica"
+              ? "No pasó la autenticación."
+              : p.history[0]?.reason?.startsWith("Retirada del catálogo")
+                ? `${p.history[0].reason}.`
+                : "El vendedor no aceptó el contrato."}{" "}
+            Coordina con{" "}
             {p.seller_name ?? "el vendedor"} ({p.seller_email}
             {p.seller_phone ? `, ${p.seller_phone}` : ""}) y registra cuando se la entregues.
           </p>
@@ -198,6 +204,7 @@ function StagePanel({ p, me, can }: { p: PieceForStaff; me: CurrentUser; can: (r
               Ver la publicación
             </Link>
           )}
+          {can(["admin"]) && <UnpublishForm action={unpublishAction.bind(null, p.id)} />}
         </section>
       );
 
