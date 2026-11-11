@@ -15,6 +15,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin/solicitudes" className="text-grafito underline-offset-4 hover:text-tinta hover:underline">
             Solicitudes{pending > 0 ? ` (${pending})` : ""}
           </Link>
+          <Link href="/admin/inventario" className="text-grafito underline-offset-4 hover:text-tinta hover:underline">
+            Inventario
+          </Link>
           <Link href="/admin/usuarios" className="text-grafito underline-offset-4 hover:text-tinta hover:underline">
             Usuarios y roles
           </Link>

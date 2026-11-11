@@ -1,7 +1,8 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentUser, isStaff } from "@/lib/auth/session";
 import { canUploadPhoto, isUuid } from "@/lib/consignment/service";
+import { canStaffUpload, inventoryPhotoPrefix } from "@/lib/inventory/service";
 import { requestPhotoPrefix } from "@/lib/storage";
 
 /**
@@ -18,10 +19,17 @@ export async function POST(request: Request) {
       onBeforeGenerateToken: async (pathname, clientPayload) => {
         const user = await getCurrentUser();
         if (!user) throw new Error("Inicia sesión para subir fotos");
-        const { productId } = JSON.parse(clientPayload ?? "{}") as { productId?: string };
+        const { productId, scope } = JSON.parse(clientPayload ?? "{}") as { productId?: string; scope?: string };
         if (!productId || !isUuid(productId)) throw new Error("Solicitud inválida");
-        if (!pathname.startsWith(requestPhotoPrefix(user.id, productId))) throw new Error("Ruta no permitida");
-        if (!(await canUploadPhoto(user.id, productId))) throw new Error("Esta solicitud ya no acepta fotos");
+        if (scope === "inventario") {
+          // Fotos del equipo: solo personal, solo en la carpeta de la pieza y solo en etapas que las aceptan.
+          if (!isStaff(user)) throw new Error("No autorizado");
+          if (!pathname.startsWith(inventoryPhotoPrefix(productId))) throw new Error("Ruta no permitida");
+          if (!(await canStaffUpload(productId))) throw new Error("Esta pieza ya no acepta fotos");
+        } else {
+          if (!pathname.startsWith(requestPhotoPrefix(user.id, productId))) throw new Error("Ruta no permitida");
+          if (!(await canUploadPhoto(user.id, productId))) throw new Error("Esta solicitud ya no acepta fotos");
+        }
         return {
           allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
           maximumSizeInBytes: 8 * 1024 * 1024,

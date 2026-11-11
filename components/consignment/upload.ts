@@ -44,20 +44,28 @@ function storageMode(): Promise<"blob" | "local"> {
   return cachedMode;
 }
 
-/** Sube una foto ya comprimida y devuelve su URL y ruta dentro del almacenamiento. */
-export async function uploadPhoto(blob: Blob, userId: string, productId: string): Promise<{ url: string; pathname: string }> {
+export type UploadScope = "solicitud" | "inventario";
+
+/**
+ * Sube una foto ya comprimida y devuelve su URL y ruta dentro del almacenamiento.
+ * - solicitud: fotos del vendedor, en su carpeta.
+ * - inventario: fotos del equipo (recepción, evidencia, finales), en la carpeta de la pieza.
+ */
+export async function uploadPhoto(blob: Blob, userId: string, productId: string, scope: UploadScope = "solicitud"): Promise<{ url: string; pathname: string }> {
   const mode = await storageMode();
   if (mode === "blob") {
-    const result = await upload(`solicitudes/${userId}/${productId}/foto.jpg`, blob, {
+    const path = scope === "inventario" ? `inventario/${productId}/foto.jpg` : `solicitudes/${userId}/${productId}/foto.jpg`;
+    const result = await upload(path, blob, {
       access: "public",
       handleUploadUrl: "/api/fotos/subir",
-      clientPayload: JSON.stringify({ productId }),
+      clientPayload: JSON.stringify({ productId, scope }),
       contentType: "image/jpeg",
     });
     return { url: result.url, pathname: result.pathname };
   }
   const form = new FormData();
   form.append("productId", productId);
+  form.append("scope", scope);
   form.append("file", blob, "foto.jpg");
   const res = await fetch("/api/fotos/local", { method: "POST", body: form });
   const data = (await res.json()) as { url?: string; pathname?: string; error?: string };

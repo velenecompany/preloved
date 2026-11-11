@@ -27,6 +27,7 @@ import {
   EvaluateOnArrival,
   SubmitRequestForm,
 } from "@/components/consignment/seller-actions";
+import { InventorySection } from "./inventory-section";
 import {
   acceptOfferAction,
   counterOfferAction,
@@ -40,9 +41,24 @@ export const dynamic = "force-dynamic";
 
 const NOTICES: Record<string, string> = {
   enviada: "Enviamos tu solicitud a revisión. Te avisamos por correo cuando tengamos respuesta.",
-  aceptada: "Aceptaste la propuesta. Te contactamos para agendar la entrega o la recolección.",
+  aceptada: "Aceptaste la propuesta. Ahora elige cómo nos entregas la pieza.",
+  entrega: "Listo, quedó agendada la entrega. Te mandamos los detalles por correo.",
+  contrato: "Aceptaste tu contrato. Ahora fotografiamos tu pieza y la publicamos; te avisamos por correo.",
+  "sin-contrato": "No aceptaste el contrato. Te contactamos para devolverte la pieza.",
   contrapropuesta: "Enviamos tu contrapropuesta. Te respondemos por correo.",
 };
+
+const AFTER_ACCEPTANCE = [
+  "pendiente_de_entrega",
+  "recibida",
+  "en_autenticacion",
+  "autenticacion_fallida",
+  "pendiente_de_contrato",
+  "pendiente_de_fotografia",
+  "publicada",
+  "devolucion_pendiente",
+  "devuelta_al_vendedor",
+];
 
 const WITHDRAWABLE = ["solicitud_borrador", "requiere_informacion", "preaprobada", "pendiente_de_entrega"];
 
@@ -100,6 +116,7 @@ export default async function RequestPage(props: { params: Promise<{ id: string 
       )}
 
       {r.status === "preaprobada" && latest?.offered_price_cents && <OfferSection r={r} userId={user.id} />}
+      {AFTER_ACCEPTANCE.includes(r.status) && <InventorySection r={r} />}
 
       {editable ? <EditableRequest r={r} userId={user.id} step={searchParams.paso} /> : <ReadOnlyRequest r={r} />}
     </div>

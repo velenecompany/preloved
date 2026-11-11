@@ -172,3 +172,68 @@ export function requestRejectedEmail(piece: string, reason: string) {
   };
   return { subject: `Respuesta a tu solicitud: ${piece}`, html: layout({ preheader: "Respuesta a tu solicitud.", ...content }), text: text(content) };
 }
+
+// ---------------------------------------------------------------------
+// Fase 3B: entrega, recepción, autenticación, contrato y publicación
+// ---------------------------------------------------------------------
+
+export function intakeScheduledEmail(piece: string, summary: string[], detailUrl: string) {
+  const content = {
+    heading: "Agendamos la entrega de tu pieza",
+    paragraphs: [`Así quedó la entrega de ${piece}:`, ...summary, "Si necesitas cambiarla, hazlo desde tu cuenta."],
+    action: { label: "Ver mi pieza", url: detailUrl },
+  };
+  return { subject: `Entrega agendada: ${piece}`, html: layout({ preheader: summary[0] ?? "Entrega agendada.", ...content }), text: text(content) };
+}
+
+export function pieceReceivedEmail(piece: string, sku: string, detailUrl: string) {
+  const content = {
+    heading: "Ya tenemos tu pieza",
+    paragraphs: [
+      `Recibimos ${piece} y la registramos con el número ${sku}.`,
+      "Sigue la autenticación física. Si todo está en orden, te mandamos tu contrato para que lo revises y lo aceptes.",
+    ],
+    action: { label: "Ver mi pieza", url: detailUrl },
+  };
+  return { subject: `Recibimos tu pieza: ${piece}`, html: layout({ preheader: `Registrada como ${sku}.`, ...content }), text: text(content) };
+}
+
+export function contractReadyEmail(piece: string, price: string, net: string, holdUntil: string, detailUrl: string) {
+  const content = {
+    heading: "Tu pieza pasó la autenticación",
+    paragraphs: [
+      `${piece} pasó la revisión física. Tu contrato está listo: precio de publicación ${price}; recibes ${net} al venderse.`,
+      `La pieza se queda con nosotros al menos hasta el ${holdUntil}. Después decides si la retiras o la dejas a la venta.`,
+      "Revísalo y acéptalo para que la fotografiemos y la publiquemos.",
+    ],
+    action: { label: "Revisar mi contrato", url: detailUrl },
+  };
+  return { subject: `Tu contrato está listo: ${piece}`, html: layout({ preheader: "Acepta tu contrato para publicar tu pieza.", ...content }), text: text(content) };
+}
+
+export function authenticationFailedEmail(piece: string, message: string, detailUrl: string) {
+  const content = {
+    heading: "Tu pieza no pasó la autenticación",
+    paragraphs: [`Revisamos ${piece} en persona y no podemos publicarla.`, message, "Te contactamos para coordinar la devolución."],
+    action: { label: "Ver mi pieza", url: detailUrl },
+  };
+  return { subject: `Resultado de la autenticación: ${piece}`, html: layout({ preheader: "Resultado de la revisión física.", ...content }), text: text(content) };
+}
+
+export function piecePublishedEmail(piece: string, price: string, productUrl: string) {
+  const content = {
+    heading: "Tu pieza ya está a la venta",
+    paragraphs: [`Publicamos ${piece} en ${price}.`, "Te avisamos en cuanto se venda."],
+    action: { label: "Ver la publicación", url: productUrl },
+  };
+  return { subject: `Publicada: ${piece}`, html: layout({ preheader: `A la venta en ${price}.`, ...content }), text: text(content) };
+}
+
+export function pieceReturnedEmail(piece: string) {
+  const content = {
+    heading: "Te devolvimos tu pieza",
+    paragraphs: [`Registramos la devolución de ${piece}. Si algo no está bien, escríbenos.`],
+    action: { label: "Ver mis consignaciones", url: appUrl("/cuenta/consignaciones") },
+  };
+  return { subject: `Devolución registrada: ${piece}`, html: layout({ preheader: "Devolución registrada.", ...content }), text: text(content) };
+}

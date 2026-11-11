@@ -1,7 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentUser, isStaff } from "@/lib/auth/session";
 import { canUploadPhoto, isUuid } from "@/lib/consignment/service";
+import { canStaffUpload, inventoryPhotoPrefix } from "@/lib/inventory/service";
 import { requestPhotoPrefix, saveLocal, storageMode } from "@/lib/storage";
 
 /** Subida local para desarrollo, cuando no hay Vercel Blob configurado. En producción no existe. */
@@ -18,10 +19,17 @@ export async function POST(request: Request) {
   if (!isUuid(productId) || !(file instanceof Blob)) return NextResponse.json({ error: "Solicitud inválida" }, { status: 400 });
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return NextResponse.json({ error: "Formato no permitido" }, { status: 400 });
   if (file.size > 8 * 1024 * 1024) return NextResponse.json({ error: "La foto pesa más de 8 MB" }, { status: 400 });
-  if (!(await canUploadPhoto(user.id, productId))) return NextResponse.json({ error: "Esta solicitud ya no acepta fotos" }, { status: 400 });
+  const inventory = form.get("scope") === "inventario";
+  if (inventory) {
+    if (!isStaff(user)) return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    if (!(await canStaffUpload(productId))) return NextResponse.json({ error: "Esta pieza ya no acepta fotos" }, { status: 400 });
+  } else if (!(await canUploadPhoto(user.id, productId))) {
+    return NextResponse.json({ error: "Esta solicitud ya no acepta fotos" }, { status: 400 });
+  }
 
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const pathname = `${requestPhotoPrefix(user.id, productId)}${randomBytes(8).toString("hex")}.${ext}`;
+  const prefix = inventory ? inventoryPhotoPrefix(productId) : requestPhotoPrefix(user.id, productId);
+  const pathname = `${prefix}${randomBytes(8).toString("hex")}.${ext}`;
   const url = await saveLocal(pathname, Buffer.from(await file.arrayBuffer()));
   return NextResponse.json({ url, pathname });
 }

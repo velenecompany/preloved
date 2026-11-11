@@ -67,8 +67,7 @@ select expect_error($q$
   update products set status = 'publicada' where id = '10000000-0000-0000-0000-000000000001'
 $q$, 'contrato');
 
-insert into legal_documents (kind, version, title, body_md, published_at)
-values ('contrato_consignacion', 1, 'Contrato', 'Borrador', now());
+-- El contrato v1 lo carga la migración 007.
 insert into consignment_agreements (product_id, legal_document_id, agreed_price_cents, commission_rule_id, commission_rate_bps, duration_days, accepted_at)
 select '10000000-0000-0000-0000-000000000001', (select id from legal_documents limit 1), 800000,
        (select id from commission_rules where commission_group = 'lujo' and min_price_cents = 0), 3000, 90, now();
@@ -210,5 +209,34 @@ end $$;
 begin;
 update products set status = 'devolucion_pendiente' where id = '10000000-0000-0000-0000-000000000001';
 rollback;
+
+-- 13. Fase 3B: entrega, SKU y autenticación fallida
+select expect_error($q$
+  insert into intake_plans (product_id, method, created_by)
+  values ('10000000-0000-0000-0000-000000000001', 'sucursal', '00000000-0000-0000-0000-00000000000a')
+$q$, 'intake_plan_details');
+select expect_error($q$
+  insert into intake_plans (product_id, method, scheduled_for, created_by)
+  values ('10000000-0000-0000-0000-000000000001', 'recoleccion', now(), '00000000-0000-0000-0000-00000000000a')
+$q$, 'intake_plan_details');
+insert into intake_plans (product_id, method, created_by)
+values ('10000000-0000-0000-0000-000000000001', 'paqueteria', '00000000-0000-0000-0000-00000000000a');
+select expect_error($q$
+  insert into intake_plans (product_id, method, scheduled_for, created_by)
+  values ('10000000-0000-0000-0000-000000000001', 'sucursal', now(), '00000000-0000-0000-0000-00000000000a')
+$q$, 'intake_plans_one_active');
+select expect_error($q$
+  insert into authentication_records (product_id, authenticator_id, result)
+  values ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000c', 'no_autentica')
+$q$, 'auth_failure_explained');
+do $$ begin
+  if nextval('product_sku_seq') < 1 then raise exception 'Falta la secuencia de SKU'; end if;
+  if (select count(*) from legal_documents where kind = 'contrato_consignacion' and published_at is not null) < 1 then
+    raise exception 'Falta el contrato de consignación publicado';
+  end if;
+  if (select value -> 'sucursal' ->> 'from_hour' from platform_settings where key = 'public.intake_options')::int <> 11 then
+    raise exception 'Faltan las opciones de entrega';
+  end if;
+end $$;
 
 select 'OK: todas las pruebas de base de datos pasaron' as resultado;
